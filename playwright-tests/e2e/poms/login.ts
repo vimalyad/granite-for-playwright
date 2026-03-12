@@ -1,5 +1,11 @@
 import { Page, expect } from "@playwright/test";
 
+interface LoginDetails {
+  email: string,
+  password: string,
+  username: string
+}
+
 export default class LoginPage {
   page: Page;
 
@@ -11,11 +17,7 @@ export default class LoginPage {
     email,
     password,
     username
-  }: {
-    email: string;
-    password: string;
-    username: string
-  }): Promise<void> => {
+  }: LoginDetails): Promise<void> => {
     await this.page.getByTestId("login-email-field").fill(email);
     await this.page.getByTestId("login-password-field").fill(password);
     await this.page.getByTestId("login-submit-button").click();

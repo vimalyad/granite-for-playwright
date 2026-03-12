@@ -1,4 +1,4 @@
-import { test } from "../fixtures";
+import { test } from "@fixtures";
 import { faker } from "@faker-js/faker";
 
 test.describe("Register page", () => {

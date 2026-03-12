@@ -1,79 +1,78 @@
-import { defineConfig, devices } from '@playwright/test';
+import {defineConfig, devices} from "@playwright/test";
 
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-// import dotenv from 'dotenv';
-// import path from 'path';
-// dotenv.config({ path: path.resolve(__dirname, '.env') });
+// file to store the session details
+export const STORAGE_STATE = "./auth/user.json";
 
-/**
- * See https://playwright.dev/docs/test-configuration.
- */
 export default defineConfig({
-  testDir: './e2e',
-  /* Run tests in files in parallel */
-  fullyParallel: true,
-  /* Fail the build on CI if you accidentally left test.only in the source code. */
-  forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
-  use: {
-    /* Base URL to use in actions like `await page.goto('')`. */
-    // baseURL: 'http://localhost:3000',
+  testDir: "./e2e",
+  // folder containing all tests
 
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
+  fullyParallel: true,
+  // by default playwright runs different test files in parallel but tests inside the same file sequentially
+  // setting this it to true so that Playwright run every single test block simultaneously , regardless of what file it is in
+
+  forbidOnly: !!process.env.CI,
+  // if false it allows us to use test.only() annotation
+
+  retries: process.env.CI ? 2 : 0,
+  // the number of times Playwright will retry test if it fails
+
+  workers: process.env.CI ? 1 : undefined,
+  // if undefined , Playwright uses half of CPU cores , but it is recommended to keep it 1 so that server doesn't get overloaded
+
+  reporter: "html",
+  // generates clickable HTML report after the test finishes
+
+  use: {
+    // traces are heavy files containing screenshots , network logs , DOM snapshots
+    // by keeping it on-first-retry , Playwright will only record heavy-data if the test fails the first time and has to run again
+    trace: "on-first-retry",
+    // baseURL we will be using for our testing
+    baseURL: "http://localhost:3000",
   },
 
-  /* Configure projects for major browsers */
+  // mainly used to test different browsers
   projects: [
+    // here it is for execution pipeline
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      // this phase is for logging of the user and store the cookies into storage file
+      name: "login",
+      use: {
+        ...devices["Desktop Chrome"]
+      },
+      testMatch: "**/login.setup.ts",
     },
 
-    // {
-    //   name: 'firefox',
-    //   use: { ...devices['Desktop Firefox'] },
-    // },
+    {
+      name: "teardown",
+      use: {
+        ...devices["Desktop Chrome"]
+      },
+      testMatch: "**/global.teardown.ts",
+    },
 
-    // {
-    //   name: 'webkit',
-    //   use: { ...devices['Desktop Safari'] },
-    // },
+    // main tests to run
+    {
+      name: "Logged In tests",
+      use: {
+        ...devices["Desktop Chrome"],
+        // storageState to use
+        storageState: STORAGE_STATE,
+      },
+      // by setting login dependencies , Playwright waits until phase 1 project completes
+      dependencies: ["login"],
+      teardown: "teardown",
+      testMatch: "**/*.spec.ts",
+      testIgnore: "**/register.spec.ts"
+    },
+    {
 
-    /* Test against mobile viewports. */
-    // {
-    //   name: 'Mobile Chrome',
-    //   use: { ...devices['Pixel 5'] },
-    // },
-    // {
-    //   name: 'Mobile Safari',
-    //   use: { ...devices['iPhone 12'] },
-    // },
-
-    /* Test against branded browsers. */
-    // {
-    //   name: 'Microsoft Edge',
-    //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-    // },
-    // {
-    //   name: 'Google Chrome',
-    //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-    // },
-  ],
-
-  /* Run your local dev server before starting the tests */
-  // webServer: {
-  //   command: 'npm run start',
-  //   url: 'http://localhost:3000',
-  //   reuseExistingServer: !process.env.CI,
-  // },
-});
+      // isolated tests like here register tests
+      name: "Logged out tests",
+      use: {
+        ...devices["Desktop Chrome"]
+      },
+      testMatch: "**/register.spec.ts",
+    },
+  ]
+})
