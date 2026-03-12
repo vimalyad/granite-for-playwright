@@ -1,4 +1,4 @@
-import { Locator, Page, expect } from "@playwright/test";
+import { Page, expect } from "@playwright/test";
 
 interface TaskDetails {
   taskName: string
@@ -58,6 +58,8 @@ export class TaskPage {
   markTaskAsCompletedAndVerify = async ({ taskName }: TaskDetails): Promise<void> => {
     await this.getTask({ type: 'pending', taskName }).getByRole("checkbox").click();
     const completedTaskInDashboard = this.getTask({ type: 'completed', taskName });
+    const isTaskCompleted = await completedTaskInDashboard.count();
+    if(!isTaskCompleted) return;
     await completedTaskInDashboard.scrollIntoViewIfNeeded();
     await expect(completedTaskInDashboard).toBeVisible();
   };

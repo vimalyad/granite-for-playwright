@@ -2,46 +2,44 @@ import { test } from "@fixtures";
 import { faker } from "@faker-js/faker";
 import LoginPage from "@poms/login";
 import { expect } from "@playwright/test";
+import { TaskPage } from "@poms/tasks";
 
 test.describe("Tasks page", () => {
   let taskName: string;
 
   // here we are creating random name for each tests
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({taskPage}, testInfo) => {
     taskName = faker.word.words({ count: 5 });
+    if(testInfo.title.includes("[SKIP_SETUP]")) return;
+    await taskPage.createTaskAndVerify({taskName});
   });
 
-  test("should create a new task with creator as the assignee", async ({ taskPage }) => {
-    await taskPage.createTaskAndVerify({ taskName });
-  });
 
-  test("should be able to mark a test as completed", async ({ taskPage }) => {
-    await taskPage.createTaskAndVerify({ taskName });
-    await taskPage.markTaskAsCompletedAndVerify({ taskName });
-  });
-
-  test("should be able to delete a completed task", async ({ taskPage }) => {
-    await taskPage.createTaskAndVerify({ taskName, });
+  // cleanup
+  test.afterEach(async ({ taskPage }) => {
     await taskPage.markTaskAsCompletedAndVerify({ taskName });
     await taskPage.deleteCompletedTaskAndVerify({ taskName });
+  })
+
+  test("should create a new task with creator as the assignee", () => {});
+
+  test("should be able to mark a task as completed", async ({ taskPage }) => {
+    await taskPage.markTaskAsCompletedAndVerify({ taskName });
   });
 
   test.describe("Starring tasks feature", () => {
     test.describe.configure({ mode: "serial" });
 
     test("should be able to star a pending task", async ({ taskPage }) => {
-      await taskPage.createTaskAndVerify({ taskName });
       await taskPage.starTaskAndVerify({ taskName })
     });
 
     test('should be able to un-star a pending task', async ({ taskPage }) => {
-      await taskPage.createTaskAndVerify({ taskName });
       await taskPage.unstarTaskAndVerify({ taskName })
     })
   });
 
-  test("should create a new task with a different user as the assignee", async ({
-    page,
+  test("should create a new task with a different user as the assignee [SKIP_SETUP]", async ({
     browser,
     taskPage
   }) => {
@@ -53,6 +51,7 @@ test.describe("Tasks page", () => {
     const newUserContext = await browser.newContext({
       storageState: { cookies: [], origins: [] }
     });
+
     // creating the page
     const newUserPage = await newUserContext.newPage();
     await newUserPage.goto("/");
