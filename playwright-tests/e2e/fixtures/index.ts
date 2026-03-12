@@ -16,6 +16,12 @@ export const test = base.extend<ExtendedFixtures>({
   taskPage: async ({ page }, use) => {
     const taskPage = new TaskPage(page);
     await use(taskPage); // same here
+  },
+
+  // overriding so that the window which we get is always at our website
+  page: async ({ page }, use) => {
+    await page.goto("/")
+    await use(page)
   }
 });
 
