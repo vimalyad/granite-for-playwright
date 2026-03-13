@@ -1,7 +1,10 @@
-import {defineConfig, devices} from "@playwright/test";
+import { defineConfig, devices } from "@playwright/test";
+import dotenv from "dotenv";
 
 // file to store the session details
 export const STORAGE_STATE = "./auth/user.json";
+
+dotenv.config({ path: "./e2e/config/.env" })
 
 export default defineConfig({
   testDir: "./e2e",

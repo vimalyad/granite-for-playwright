@@ -1,7 +1,6 @@
 import { test as base } from "@playwright/test";
 import LoginPage from "../poms/login";
-import { TaskPage } from "@poms/tasks";
-import { CommentPage } from "@poms/comments";
+import { CommentPage, TaskPage } from "@poms";
 
 interface ExtendedFixtures {
   loginPage: LoginPage;
@@ -22,11 +21,11 @@ export const test = base.extend<ExtendedFixtures>({
 
   // overriding so that the window which we get is always at our website
   page: async ({ page }, use) => {
-    await page.goto("/")
+    await test.step("Visit Login Page", () => page.goto("/"))
     await use(page)
   },
 
-  commentPage: async({taskPage , page} , use) => {
+  commentPage: async ({ taskPage, page }, use) => {
     const commentPage = new CommentPage(page);
     await use(commentPage)
   }

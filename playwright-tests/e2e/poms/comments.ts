@@ -4,7 +4,7 @@ interface CommentDetails {
   comment: string
 }
 
-export class CommentPage {
+export default class CommentPage {
 
   page: Page;
 
