@@ -1,10 +1,12 @@
 import { test as base } from "@playwright/test";
 import LoginPage from "../poms/login";
 import { TaskPage } from "@poms/tasks";
+import { CommentPage } from "@poms/comments";
 
 interface ExtendedFixtures {
   loginPage: LoginPage;
   taskPage: TaskPage;
+  commentPage: CommentPage
 }
 
 export const test = base.extend<ExtendedFixtures>({
@@ -22,6 +24,11 @@ export const test = base.extend<ExtendedFixtures>({
   page: async ({ page }, use) => {
     await page.goto("/")
     await use(page)
+  },
+
+  commentPage: async({taskPage , page} , use) => {
+    const commentPage = new CommentPage(page);
+    await use(commentPage)
   }
 });
 

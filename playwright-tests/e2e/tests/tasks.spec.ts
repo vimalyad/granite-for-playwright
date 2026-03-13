@@ -2,7 +2,6 @@ import { test } from "@fixtures";
 import { faker } from "@faker-js/faker";
 import LoginPage from "@poms/login";
 import { expect } from "@playwright/test";
-import { TaskPage } from "@poms/tasks";
 
 test.describe("Tasks page", () => {
   let taskName: string;

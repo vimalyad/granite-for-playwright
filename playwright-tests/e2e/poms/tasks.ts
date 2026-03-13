@@ -32,7 +32,7 @@ export class TaskPage {
     // clicking the outer container
     await this.page.locator(".css-2b097c-container").click();
 
-    // find the specific text Oliver Smith and click
+    // find the specific text userName and click
     await this.page.locator('.css-26l3qy-menu').getByText(userName).click();
 
     // submit button click
@@ -59,7 +59,7 @@ export class TaskPage {
     await this.getTask({ type: 'pending', taskName }).getByRole("checkbox").click();
     const completedTaskInDashboard = this.getTask({ type: 'completed', taskName });
     const isTaskCompleted = await completedTaskInDashboard.count();
-    if(!isTaskCompleted) return;
+    if (!isTaskCompleted) return;
     await completedTaskInDashboard.scrollIntoViewIfNeeded();
     await expect(completedTaskInDashboard).toBeVisible();
   };
@@ -78,6 +78,9 @@ export class TaskPage {
     const starIcon = this.getStarIcon({ taskName })
     await starIcon.click();
     await expect(starIcon).toHaveClass(/ri-star-fill/i);
+    // for concurrency this one preferred
+    // await expect(this.getTask({ type: 'pending' }).filter({ hasText: taskName })).toBeVisible();
+    // it is preferred if backend actually sorted task and moved to top
     await expect(this.getTask({ type: 'pending' }).nth(1)).toContainText(taskName);
   }
 
@@ -86,6 +89,18 @@ export class TaskPage {
     const starIcon = this.getStarIcon({ taskName });
     await starIcon.click();
     await expect(starIcon).toHaveClass(/ri-star-line/);
+  }
+
+  openTask = async ({ taskName }: TaskDetails) => {
+    const taskRow = this.getTask({ type: 'pending', taskName });
+    await taskRow.getByText(new RegExp(taskName, "i")).click();
+  }
+
+  verifyTaskDoesNotExist = async ({ taskName }: TaskDetails) => {
+    const taskInPendingBoard = this.getTask({ type: 'pending', taskName: new RegExp(taskName, "i") });
+    await expect(taskInPendingBoard).toBeHidden();
+    const taskInCompletedBoard = this.getTask({ type: 'completed', taskName: new RegExp(taskName, "i") });
+    await expect(taskInCompletedBoard).toBeHidden();
   }
 
 
